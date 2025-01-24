@@ -12,9 +12,9 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 소스 코드 복사
-COPY . /app
+COPY ./vision_project/ /app
 
 # FastAPI 애플리케이션 실행
 # main.py 파일에서 uvicorn.run(app, host="0.0.0.0", port=8000) 형태로 
 # 실행되도록 코드를 작성했을 경우 해당 CMD가 필요 없음
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "vision_project.main:app", "--host", "0.0.0.0", "--port", "8000"]

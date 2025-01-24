@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from routers.vision_router import router as vision_router
-from routers.chatgpt_router import router as chatgpt_router
-from routers.ocr_router import router as ocr_router
+from .routers.yolo_router import router as vision_router
+from .routers.chatgpt_router import router as chatgpt_router
+from .routers.ocr_router import router as ocr_router
 
-app = FastAPI(title="Machine Vision & ChatGPT API")
+app = FastAPI()
 
 # test
 # 라우터 등록 (prefix와 tags로 엔드포인트 구분)

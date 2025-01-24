@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from PIL import Image
-from vision_project.vision_model.ocr_model import load_model, run_inference
+from ..models.ocr_model import load_model, run_inference
 
 router = APIRouter()
 
