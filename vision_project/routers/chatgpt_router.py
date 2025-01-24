@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body
-from utils.openai_utils import ask_chatgpt
+from ..utils.openai_utils import ask_chatgpt
 
 router = APIRouter()
 
