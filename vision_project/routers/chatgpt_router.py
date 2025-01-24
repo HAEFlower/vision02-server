@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body
-from ..utils.openai_utils import ask_chatgpt
+from ..domain.openai.request_gpt import ask_chatgpt
 
 router = APIRouter()
 
@@ -9,6 +9,7 @@ async def chatgpt_query(prompt: str = Body(..., embed=True)):
     ChatGPT 엔드포인트.
     사용자의 프롬프트를 받아 GPT 모델에 질의 후 결과 반환.
     """
+    print(f"ChatGPT 질의: {prompt}")
     try:
         answer = ask_chatgpt(prompt)
         return {"prompt": prompt, "answer": answer}
