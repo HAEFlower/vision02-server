@@ -1,14 +1,14 @@
-import io
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from PIL import Image
-from ..models.ocr_model import load_model, run_inference
-from ..utils.dummy import get_response_dummy
+import io
+import json
+from ..domain.openai.extract_product_names import extract_product_names
+from ..domain.openai.request_gpt import ask_chatgpt
+from ..models.ocr_model import run_inference
 
 router = APIRouter()
 
-# 앱 시작 시 1회 모델 로딩 (데모용)
-ocr_model = load_model()
-
+# ocr_model = load_model()
 
 @router.post("/")
 async def ocr_inference(
@@ -34,11 +34,18 @@ async def ocr_inference(
         raise HTTPException(status_code=400, detail=f"이미지 처리 오류: {str(e)}")
 
     # 추론 실행
-    result = run_inference(ocr_model, image)
+    result = run_inference(image)
 
-    # 추론 결과 분석
+    # 추론 결과 텍스트를 사용하여 상품명 추출
+    receipt_text = result["text"]
+    
+    product_names = extract_product_names(receipt_text)
 
-    # gpt-3.5-turbo 엔진을 사용해 이미지에 대한 설명 생성
+    # GPT 모델을 사용하여 레시피 결과물 추출
+    try:
+        recipe_result = ask_chatgpt(product_names, cookingGoal, cookingMethod)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"GPT 요청 오류: {str(e)}")
 
-    # 추론 결과 반환
-    return get_response_dummy()
+    # 최종 결과 반환
+    return recipe_result
