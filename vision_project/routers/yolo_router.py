@@ -7,7 +7,7 @@ from ..utils.dummy import get_response_dummy
 router = APIRouter()
 
 # 앱 시작 시 1회 모델 로딩 (데모용)
-vision_model = load_model()
+yolo_model = load_model()
 
 
 @router.post("/")
@@ -34,7 +34,7 @@ async def vision_inference(
         raise HTTPException(status_code=400, detail=f"이미지 처리 오류: {str(e)}")
 
     # 추론 실행
-    result = run_inference(vision_model, image)
+    result = run_inference(yolo_model, image)
 
     # 추론 결과 분석
 
