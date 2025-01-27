@@ -1,3 +1,5 @@
+import json
+
 def get_response_dummy():
     dummy = """
         {
@@ -80,4 +82,4 @@ def get_response_dummy():
     }
     """
 
-    return dummy
+    return json.loads(dummy)
