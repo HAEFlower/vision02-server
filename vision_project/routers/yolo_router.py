@@ -3,6 +3,8 @@ from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from PIL import Image
 from ..models.yolo_model import load_model, run_inference
 from ..utils.dummy import get_response_dummy
+from ..utils.ingredients_list import get_ingredient_by_id, get_ingreidients_list_by_ids
+from ..domain.openai.request_gpt import ask_chatgpt
 
 router = APIRouter()
 
@@ -25,20 +27,20 @@ async def vision_inference(
         contents = await file.read()
 
         # io.BytesIO로 래핑해 PIL에서 열 수 있는 파일 객체 형태로 만들기
-        image = Image.open(io.BytesIO(contents))
-        # RGB 변환 (원본이 PNG, JPEG 등일 경우에도 일관성 있게 RGB 처리)
-        image = image.convert("RGB")
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
 
     except Exception as e:
         # 이미지 파일이 손상되어 있거나, Pillow가 처리할 수 없는 형식일 경우 예외 발생
         raise HTTPException(status_code=400, detail=f"이미지 처리 오류: {str(e)}")
 
     # 추론 실행
-    result = run_inference(yolo_model, image)
+    result = run_inference(yolo_model, "./vision_project/models/Unseen_2.png")
 
     # 추론 결과 분석
-
-    # gpt-3.5-turbo 엔진을 사용해 이미지에 대한 설명 생성
+    print(f"result: {result}")
+    # ingredients = get_ingreidients_list_by_ids(result)
+    # gpt api를 사용해 이미지에 대한 설명 생성
+    # response = ask_chatgpt(ingredients, cookingGoal, cookingMethod)
 
     # 추론 결과 반환
     return get_response_dummy()
