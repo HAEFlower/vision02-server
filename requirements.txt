@@ -5,8 +5,11 @@ python-multipart==0.0.7
 pillow==11.0.0
 
 # 필요에 따라 추가 설치 (주석 해제 후 원하는 버전으로 수정 가능):
-# torch==2.3.0
-# torchvision==0.16.0
-# opencv-python==4.9.0
+torch
+torchvision
+opencv-python
 # tensorflow==2.14.0
 # onnxruntime==1.15.0
+
+# YSH added
+pytesseract
