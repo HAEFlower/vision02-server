@@ -34,7 +34,7 @@ async def ocr_inference(
         raise HTTPException(status_code=400, detail=f"이미지 처리 오류: {str(e)}")
 
     # 추론 실행
-    result = run_inference(ocr_model, image)
+    # result = run_inference(ocr_model, image)
 
     # 추론 결과 분석
 
