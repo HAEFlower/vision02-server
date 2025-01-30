@@ -1,13 +1,50 @@
 import io
+import logging
+import os
+from datetime import datetime
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from ..models.yolo_model import load_model, run_inference
-from ..utils.dummy import get_response_dummy
+from ..domain.openai.request_gpt import ask_chatgpt
 
 router = APIRouter()
-
-# 앱 시작 시 1회 모델 로딩 (데모용)
 yolo_model = load_model()
+
+
+def save_annotated_image(image, result, INGREDIENTS, save_dir="results"):
+    """바운딩 박스가 그려진 이미지 저장 함수"""
+    try:
+        draw = ImageDraw.Draw(image)
+
+        # 시스템 기본 폰트 사용으로 수정
+        try:
+            font = ImageFont.truetype("arial.ttf", 20)
+        except IOError:
+            font = ImageFont.load_default()
+            logging.warning("Arial font not found, using default font")
+
+        os.makedirs(save_dir, exist_ok=True)
+
+        for box in result[0].boxes:
+            cords = box.xyxy[0].tolist()
+            xmin, ymin, xmax, ymax = map(int, cords)
+
+            draw.rectangle([(xmin, ymin), (xmax, ymax)], outline=(255, 0, 0), width=2)
+
+            cls_id = int(box.cls.item())
+            label = get_ingredient_by_id(INGREDIENTS, cls_id)
+            conf = box.conf.item()
+            text = f"{label} {conf:.2f}"
+            draw.text((xmin, ymin - 25), text, fill=(255, 0, 0), font=font)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = os.path.join(save_dir, f"detection_{timestamp}.jpg")
+        image.save(output_path)
+        logging.info(f"Annotated image saved to: {output_path}")
+
+    except Exception as e:
+        logging.error(f"Image annotation failed: {str(e)}")
+        raise
 
 
 @router.post("/")
@@ -16,29 +53,41 @@ async def vision_inference(
     cookingGoal: str = Form(...),
     cookingMethod: str = Form(...),
 ):
-    """
-    머신 비전 추론 엔드포인트.
-    이미지 파일을 받아서 모델 추론 후 결과를 반환.
-    """
+    """머신 비전 추론 엔드포인트"""
     try:
-        # 업로드 파일을 비동기로 읽어 바이트 배열 획득
         contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        logging.info(f"Image processing completed: {file.filename}")
 
-        # io.BytesIO로 래핑해 PIL에서 열 수 있는 파일 객체 형태로 만들기
-        image = Image.open(io.BytesIO(contents))
-        # RGB 변환 (원본이 PNG, JPEG 등일 경우에도 일관성 있게 RGB 처리)
-        image = image.convert("RGB")
+        result = run_inference(yolo_model, image)
+        logging.info(f"Inference completed: {file.filename}")
+        INGREDIENTS = [result[0].names[i] for i in range(50)]
+
+        # 바운딩 박스가 포함된 이미지 저장
+        save_annotated_image(image, result, INGREDIENTS)
+
+        class_ids = []
+        if hasattr(result[0], "boxes"):
+            for box in result[0].boxes:
+                cls_id = int(box.cls.item())
+                class_ids.append(cls_id)
+
+        ingredients = get_ingreidients_list_by_ids(INGREDIENTS, class_ids)
+        logging.info(f"Inference results: {ingredients}")
+
+        response = ask_chatgpt(ingredients, cookingGoal, cookingMethod)
+        logging.info(f"ChatGPT response generated")
+
+        return response
 
     except Exception as e:
-        # 이미지 파일이 손상되어 있거나, Pillow가 처리할 수 없는 형식일 경우 예외 발생
-        raise HTTPException(status_code=400, detail=f"이미지 처리 오류: {str(e)}")
+        logging.error(f"Processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # 추론 실행
-    result = run_inference(yolo_model, image)
 
-    # 추론 결과 분석
+def get_ingredient_by_id(INGREDIENTS, ingredient_id: int) -> str:
+    return INGREDIENTS[ingredient_id]
 
-    # gpt-3.5-turbo 엔진을 사용해 이미지에 대한 설명 생성
 
-    # 추론 결과 반환
-    return get_response_dummy()
+def get_ingreidients_list_by_ids(INGREDIENTS, ids: list) -> list:
+    return [get_ingredient_by_id(INGREDIENTS, ingredient_id) for ingredient_id in ids]

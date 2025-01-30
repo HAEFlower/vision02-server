@@ -8,6 +8,7 @@ pillow==11.0.0
 torch
 torchvision
 opencv-python
+ultralytics
 # tensorflow==2.14.0
 # onnxruntime==1.15.0
 
