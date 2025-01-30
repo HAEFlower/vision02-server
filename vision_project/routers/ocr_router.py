@@ -8,7 +8,6 @@ from ..models.ocr_model import run_inference
 
 router = APIRouter()
 
-# ocr_model = load_model()
 
 @router.post("/")
 async def ocr_inference(
@@ -38,7 +37,7 @@ async def ocr_inference(
 
     # 추론 결과 텍스트를 사용하여 상품명 추출
     receipt_text = result["text"]
-    
+
     product_names = extract_product_names(receipt_text)
 
     # GPT 모델을 사용하여 레시피 결과물 추출
