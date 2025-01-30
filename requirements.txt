@@ -11,3 +11,6 @@ opencv-python
 ultralytics
 # tensorflow==2.14.0
 # onnxruntime==1.15.0
+
+# YSH added
+pytesseract
