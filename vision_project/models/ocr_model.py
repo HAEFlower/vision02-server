@@ -22,7 +22,7 @@ def process_prescription(image):
     enhanced = clahe.apply(blur)
 
     # 모폴로지 연산
-    kernel = np.ones((2, 2), np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
     processed = cv2.morphologyEx(enhanced, cv2.MORPH_CLOSE, kernel)
 
     # 노이즈 제거 및 선명도 향상
