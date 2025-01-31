@@ -47,7 +47,7 @@ def save_annotated_image(image, result, INGREDIENTS, save_dir="results"):
         raise
 
 
-@router.post("/")
+@router.post("")
 async def vision_inference(
     file: UploadFile = File(...),
     cookingGoal: str = Form(...),

@@ -9,7 +9,7 @@ from ..models.ocr_model import run_inference
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("")
 async def ocr_inference(
     file: UploadFile = File(...),
     cookingGoal: str = Form(...),
